@@ -11,17 +11,45 @@ def get_url(num, name):
 
 
 def save_img(link, class_name, img_name):
-    if link.find(".jpg") != -1:
-        os.chdir(f"{class_name}")
-        filename = f'{img_name:03}.jpg'
-        print(filename)
-        r = requests.get(link, allow_redirects=True)
-        open(filename, "wb",).write(r.content)
-        os.chdir("..")
-        print(len(os.listdir(f"{class_name}")))
-        return True
-    else:
+    try:
+        if link.find(".jpg") != -1:
+            r = requests.get(link, timeout=1)
+            if r:
+                os.chdir(f"{class_name}")
+                filename = f'{img_name:03}.jpg'
+                # print(filename)
+                open(filename, "wb",).write(r.content)
+                os.chdir("..")
+                # print(len(os.listdir(f"{class_name}")))
+                return True
         return False
+    except requests.exceptions.Timeout:
+        print("Time out")
+
+
+def full_save(class_name):
+    page_num = 0
+    soup = BeautifulSoup(get_url(page_num, f'{class_name}').text, "lxml")
+    n = 29
+    i = 0
+    j = 0
+    while j != 100:
+        time.sleep(0.05)
+        data = str(soup.find("div", class_=f"serp-item_pos_{i}"))
+        data = data.split('origin":')
+        data = data[1].split('url":"')
+        data = data[1].split('"},')
+        print(j, "", data[0])
+        if save_img(data[0], f"{class_name}", j):
+            print("Success")
+            j += 1
+        else:
+            print("Error")
+        if i == n:
+            page_num += 1
+            soup = BeautifulSoup(get_url(page_num, f'{class_name}').text, "lxml")
+            n += 30
+        i += 1
 
 
 if not os.path.isdir("dataset"):
@@ -35,16 +63,6 @@ else:
         os.mkdir("cat")
     if not os.path.isdir("dog"):
         os.mkdir("dog")
-page_num = 0
-soup = BeautifulSoup(get_url(page_num, 'cat').text, "lxml")
-for i in range(0, 1):
-    time.sleep(0.5)
-    data = str(soup.find("div", class_=f"serp-item_pos_{i}"))
-    data = data.split('origin":')
-    data = data[1].split('url":"')
-    data = data[1].split('"},')
-    print(i, "", data[0])
-    print(save_img(data[0], "cat", i))
-
-
+full_save("cat")
+full_save("dog")
 # while (len(os.listdir(f"dataset/{class_name}")) != 1000):
