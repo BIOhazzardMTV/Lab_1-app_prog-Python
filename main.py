@@ -1,4 +1,3 @@
-# import socket
 import requests
 import urllib3.exceptions
 from bs4 import BeautifulSoup
@@ -46,7 +45,6 @@ def full_save(class_name, num_of_required_pictures):
             data = data.split('"origin":{"')
             data = data[1].split('"url":"')
             data = data[1].split('"}')
-            # print(f"i = {i}; " + f"j = {j}; " + f"page_num = {page_num}  " + f"link : {data[0]}")
             if save_img(data[0], j, session):
                 j += 1
                 num_of_uploaded += 1
@@ -87,4 +85,3 @@ try:
     full_save('dog', 162)
 except Exception:
     print("Error")
-
